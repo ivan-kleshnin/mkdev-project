@@ -1,0 +1,53 @@
+:root {
+  --main-bg: #9ead86;
+  --width: 220px;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: flex;
+}
+
+.grid {
+  background: var(--main-bg);
+  border: 2px solid #000;
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(var(--width) + 8px);
+  margin: auto;
+  padding: 2px;
+}
+
+.cell {
+  width: calc(var(--width) / 10 - 2px);
+  height: calc(var(--width) / 10 - 2px);
+  border: 2px solid #000;
+  margin: 1px;
+  position: relative;
+  opacity: 0.3;
+}
+
+.cell:after {
+  content: '';
+  display: block;
+  position: absolute;
+  height: 75%;
+  width: 75%;
+  background: #000;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.active {
+  opacity: 1;
+}

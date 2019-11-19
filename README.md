@@ -1,12 +1,9 @@
 # Game Tetris (project from mkdev)
 
-
-Usage
------
+## Usage
 
 Start app:
 
 ```sh
 yarn start
 ```
-
