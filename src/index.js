@@ -47,7 +47,7 @@ const drawFigureOnGrid = ({ grid, figure, coords }) => {
     const coords = { x: X, y: Y++ };
     const g = drawFigureOnGrid({
       grid,
-      figure: FIGURES.l,
+      figure: FIGURES.skew,
       coords,
     });
     document.querySelector('.grid').innerHTML = renderGrid({
