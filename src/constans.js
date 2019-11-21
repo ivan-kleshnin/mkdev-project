@@ -1,5 +1,5 @@
 export const FIGURES = {
-  straight: [
+  line: [
     [1, 1, 1, 1],
     [0, 0, 0, 0],
   ],
@@ -7,7 +7,7 @@ export const FIGURES = {
     [1, 1, 0, 0],
     [1, 1, 0, 0],
   ],
-  l: [
+  lShape: [
     [1, 1, 1, 0],
     [0, 0, 1, 0],
   ],
@@ -15,7 +15,7 @@ export const FIGURES = {
     [0, 1, 1, 0],
     [1, 1, 0, 0],
   ],
-  t: [
+  tee: [
     [1, 1, 1, 0],
     [0, 1, 0, 0],
   ],

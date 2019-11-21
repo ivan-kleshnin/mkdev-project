@@ -24,7 +24,7 @@ const drawFigureOnGrid = ({ grid, figure, coords }) => {
       if (y < 0) {
         continue;
       }
-      if (point === 1 && board[y] !== undefined && board[y][x] !== undefined) {
+      if (point && board[y] !== undefined && board[y][x] !== undefined) {
         board[y][x] = 1;
       }
       x++;
@@ -42,13 +42,12 @@ const drawFigureOnGrid = ({ grid, figure, coords }) => {
   });
 
   let Y = -1;
-  let X = grid[0].length / 2 - 1;
-
+  let X = Math.floor((grid[0].length - 1) / 2 - 1);
   setInterval(() => {
     const coords = { x: X, y: Y++ };
     const g = drawFigureOnGrid({
       grid,
-      figure: FIGURES.square,
+      figure: FIGURES.l,
       coords,
     });
     document.querySelector('.grid').innerHTML = renderGrid({
