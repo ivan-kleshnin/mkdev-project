@@ -1,54 +1,58 @@
 import { FIGURES } from './constans';
 
-class Grid {
-  constructor({ selector }) {
-    this.domParent = document.querySelector(selector);
-    this.width = 10;
-    this.height = 20;
+const renderGrid = ({ grid }) => {
+  const symbols = {
+    '0': '\u2B1C',
+    '1': '\u2B1B',
+  };
+  const html = grid.reduce((accHtml, row) => {
+    const rowHtml = row.reduce((accRow, cell) => `${accRow}${symbols[cell]}`, '');
+    return `${accHtml}${rowHtml}\n`;
+  }, '');
 
-    this.grid = Array.from({ length: this.height }, () =>
-      Array(this.width).fill(0),
-    );
-    this.domCells = [];
-  }
+  return `<pre><code>${html}</code></pre>`;
+};
 
-  initGrid() {
-    const fragment = document.createDocumentFragment();
-    for (let i = 0; i < this.height; i++) {
-      const domRowCells = [];
-      for (let j = 0; j < this.width; j++) {
-        const block = document.createElement('DIV');
-        block.classList.add('cell');
-        fragment.appendChild(block);
-        domRowCells.push(block);
+const drawFigureOnGrid = ({ grid, figure, coords }) => {
+  let y = coords.y;
+  let x = coords.x;
+  let board = grid.map(row => [...row]);
+
+  for (let i = 0; i < figure.length; i++) {
+    for (let j = 0; j < figure[i].length; j++) {
+      const point = figure[i][j];
+      if (y < 0) {
+        continue;
       }
-      this.domCells.push(domRowCells);
-    }
-
-    this.domParent.appendChild(fragment);
-  }
-
-  render() {
-    for (let i = 0; i < this.grid.length; i++) {
-      const row = this.grid[i];
-      for (let j = 0; j < row.length; j++) {
-        const value = row[j];
-        const domCell = this.domCells[i][j];
-        if (value && !domCell.classList.contains('active')) {
-          domCell.classList.add('active');
-        } else {
-          if (domCell.classList.contains('active')) {
-            domCell.classList.remove('active');
-          }
-        }
+      if (point === 1 && board[y] !== undefined && board[y][x] !== undefined) {
+        board[y][x] = 1;
       }
+      x++;
     }
+    x = coords.x;
+    y++;
   }
-}
+  return board;
+};
 
-const grid = new Grid({
-  selector: '.grid',
-});
+// Для примера,
+(() => {
+  const grid = Array.from({ length: 20 }).map((_, i) => {
+    return Array.from({ length: 10 }).map(() => 0);
+  });
 
-grid.initGrid();
-grid.render();
+  let Y = -1;
+  let X = grid[0].length / 2 - 1;
+
+  setInterval(() => {
+    const coords = { x: X, y: Y++ };
+    const g = drawFigureOnGrid({
+      grid,
+      figure: FIGURES.square,
+      coords,
+    });
+    document.querySelector('.grid').innerHTML = renderGrid({
+      grid: g,
+    });
+  }, 1000);
+})();
