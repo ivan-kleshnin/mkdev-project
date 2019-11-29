@@ -20,3 +20,15 @@ export const FIGURES = {
     [0, 1, 0, 0],
   ],
 };
+
+export const SYMBOLS = {
+  '0': '\u2B1C',
+  '1': '\u2B1B',
+};
+
+export const KEYMAP = {
+  ArrowUp: 'UP',
+  ArrowDown: 'DOWN',
+  ArrowLeft: 'LEFT',
+  ArrowRight: 'RIGHT',
+};

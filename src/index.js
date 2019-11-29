@@ -1,57 +1,36 @@
-import { FIGURES } from './constans';
+import { State } from './State';
+import { SYMBOLS, KEYMAP } from './constants';
+import { EVENTS_ENUM } from './events';
 
-const renderGrid = ({ grid }) => {
-  const symbols = {
-    '0': '\u2B1C',
-    '1': '\u2B1B',
-  };
+const renderGrid = grid => {
   const html = grid.reduce((accHtml, row) => {
-    const rowHtml = row.reduce((accRow, cell) => `${accRow}${symbols[cell]}`, '');
+    const rowHtml = row.reduce((accRow, cell) => `${accRow}${SYMBOLS[cell]}`, '');
     return `${accHtml}${rowHtml}\n`;
   }, '');
 
   return `<pre><code>${html}</code></pre>`;
 };
 
-const drawFigureOnGrid = ({ grid, figure, coords }) => {
-  let y = coords.y;
-  let x = coords.x;
-  let board = grid.map(row => [...row]);
+const dom = document.querySelector('.grid');
 
-  for (let i = 0; i < figure.length; i++) {
-    for (let j = 0; j < figure[i].length; j++) {
-      const point = figure[i][j];
-      if (y < 0) {
-        continue;
-      }
-      if (point && board[y] !== undefined && board[y][x] !== undefined) {
-        board[y][x] = 1;
-      }
-      x++;
+const initKeyListeners = condition => cb => {
+  document.addEventListener('keydown', e => {
+    if (condition(e)) {
+      cb(e);
     }
-    x = coords.x;
-    y++;
-  }
-  return board;
+  });
 };
 
-// Для примера,
-(() => {
-  const grid = Array.from({ length: 20 }).map((_, i) => {
-    return Array.from({ length: 10 }).map(() => 0);
+const initGame = () => {
+  const state = new State();
+
+  state.subscribe(EVENTS_ENUM.tick, grid => {
+    dom.innerHTML = renderGrid(grid);
   });
 
-  let Y = -1;
-  let X = Math.floor((grid[0].length - 1) / 2 - 1);
-  setInterval(() => {
-    const coords = { x: X, y: Y++ };
-    const g = drawFigureOnGrid({
-      grid,
-      figure: FIGURES.skew,
-      coords,
-    });
-    document.querySelector('.grid').innerHTML = renderGrid({
-      grid: g,
-    });
-  }, 1000);
-})();
+  initKeyListeners(e => KEYMAP[e.code])(e =>
+    state.emit(EVENTS_ENUM.keyPressEvent, KEYMAP[e.code]),
+  );
+};
+
+initGame();
