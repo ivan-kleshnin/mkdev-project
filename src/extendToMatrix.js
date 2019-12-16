@@ -1,8 +1,9 @@
-export const extendToMatrix = ({ figure, coords, width, height }) => {
-  const getValueFromFigure = (figure, coords, x, y) => {
+export const extendToMatrix = ({ figure, col, row }) => {
+  const getValueFromFigure = (figure, x, y) => {
+    const { coords } = figure;
     let figureX = x - coords.x;
     let figureY = y - coords.y;
-    let rowMatrix = figure[figureY];
+    let rowMatrix = figure.figure[figureY];
 
     const valueCell =
       rowMatrix !== undefined && rowMatrix[figureX] !== undefined
@@ -12,17 +13,16 @@ export const extendToMatrix = ({ figure, coords, width, height }) => {
     return valueCell;
   };
 
-  const getValue = ({ figure, coords }) => y => {
+  const getValue = figure => y => {
     return (_, x) => {
-      return getValueFromFigure(figure, coords, x, y);
+      return getValueFromFigure(figure, x, y);
     };
   };
 
-  const prepareMapFunc = getValue({ figure, coords });
-
-  return Array.from({ length: height }).map((a, matrixY) => {
+  const prepareMapFunc = getValue(figure);
+  return Array.from({ length: row }).map((a, matrixY) => {
     const mapFunc = prepareMapFunc(matrixY);
 
-    return Array.from({ length: width }).map(mapFunc);
+    return Array.from({ length: col }).map(mapFunc);
   });
 };

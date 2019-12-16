@@ -1,4 +1,4 @@
-export const rotateFigure = figure => {
+export const rotateMatrix = figure => {
   let rotatedFigure = [];
   let len = figure.length - 1;
   figure.forEach((row, y) => {

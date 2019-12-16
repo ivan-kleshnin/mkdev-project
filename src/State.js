@@ -1,70 +1,62 @@
 import { EventEmitter } from './EventEmitter';
 import { FIGURES } from './constants';
 import { extendToMatrix } from './extendToMatrix';
-import { mergeMatrix } from './mergeMatrix';
-import { rotateFigure } from './rotateFigure';
-import { EVENTS_ENUM } from './events';
+import { mergeMatrices } from './mergeMatrices';
+import { getSizeFigure } from './utils';
+
+export const figureState = {};
 
 export class State extends EventEmitter {
   constructor(width = 10, height = 20) {
     super();
     this.width = width;
-    this.height = height;
-    this.tickTime = 500;
-    this.coords = {
-      x: Math.floor(this.width / 2),
-      y: -1,
+    this.state = {
+      isRunning: true,
+      width,
+      height,
+      figure: this.getNextFigure(),
+      grid: this.createEmptyGrid(width, height),
+      speed: 1,
     };
-    this.figure = FIGURES.skew;
-    this.grid = this.createEmptyGrid();
-    this.loop();
-    this.subscribe(EVENTS_ENUM.keyPressEvent, this.keyHandler);
-    this.subscribe(EVENTS_ENUM.tick, () => this.coords.y++);
   }
 
-  keyHandler = key => {
-    let { x, y } = this.coords;
-    const handlers = {
-      UP: () => this.rotateFigure(),
-      DOWN: () => this.setCoords({ x, y: ++y }),
-      LEFT: () => this.setCoords({ x: --x, y }),
-      RIGHT: () => this.setCoords({ x: ++x, y }),
-    };
-
-    handlers[key]();
-  };
-
-  createEmptyGrid() {
-    return Array.from({ length: this.height }).map(_ => {
-      return Array.from({ length: this.width }).map(() => 0);
+  createEmptyGrid(width, height) {
+    return Array.from({ length: height }).map(_ => {
+      return Array.from({ length: width }).map(() => 0);
     });
   }
+  getNextFigure() {
+    const keys = Object.keys(FIGURES);
+    const randomIndex = Math.abs(Math.floor(Math.random() * keys.length - 1));
+    const nextFigure = FIGURES[keys[randomIndex]];
 
-  setCoords(coords) {
-    this.coords = coords;
-  }
-
-  rotateFigure() {
-    this.figure = rotateFigure(this.figure);
-  }
-
-  loop() {
-    setInterval(() => {
-      this.emit(EVENTS_ENUM.tick, this.renderGrid());
-    }, this.tickTime);
+    return {
+      coords: {
+        x: Math.floor(this.width / 2),
+        y: -1,
+      },
+      size: getSizeFigure(nextFigure),
+      figure: nextFigure,
+    };
   }
 
   renderGrid() {
-    const grid = mergeMatrix(
-      this.grid,
+    const { figure, grid, width, height } = this.state;
+
+    return mergeMatrices(
+      grid,
       extendToMatrix({
-        figure: this.figure,
-        coords: this.coords,
-        width: this.width,
-        height: this.height,
+        figure,
+        col: width,
+        row: height,
       }),
     );
-
-    return grid;
   }
+
+  emit = setStateCallback => {
+    this.state = setStateCallback(this.state);
+    // if (!this.state.isRunning) {
+    //   this.state = { ...this.state, ...this.getNextFigure(), isRunning: true };
+    // }
+  };
 }

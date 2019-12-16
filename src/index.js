@@ -1,19 +1,26 @@
 import { State } from './State';
 import { SYMBOLS, KEYMAP } from './constants';
-import { EVENTS_ENUM } from './events';
+import { rotateMatrix } from './rotateMatrix';
+import { isGameLost } from './isGameLost';
+import { createTick } from './streams';
+import { checkPosition, checkCollision } from './utils';
+import { renderDom, renderGrid } from './render';
 
-const renderGrid = grid => {
-  const html = grid.reduce((accHtml, row) => {
-    const rowHtml = row.reduce((accRow, cell) => `${accRow}${SYMBOLS[cell]}`, '');
-    return `${accHtml}${rowHtml}\n`;
-  }, '');
-
-  return `<pre><code>${html}</code></pre>`;
+const pause = (tick$, tickEvent) => {
+  let play = true;
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space') return;
+    if (play) {
+      tick$.unsubscribe(tickEvent);
+      play = false;
+    } else {
+      tick$.subscribe(tickEvent);
+      play = true;
+    }
+  });
 };
 
-const dom = document.querySelector('.grid');
-
-const initKeyListeners = condition => cb => {
+const initKeyDownListeners = condition => cb => {
   document.addEventListener('keydown', e => {
     if (condition(e)) {
       cb(e);
@@ -21,16 +28,72 @@ const initKeyListeners = condition => cb => {
   });
 };
 
+const enqueue = (state, move) => {
+
+  return !checkCollision(state.grid,state.figure, state.grid) ?
+};
+
+const createHandleKeyDown = state => e => {
+  const code = e.code;
+
+  const reducer = (state, code) => {
+    switch (code) {
+      case 'ArrowUp':
+        const figure = { ...state.figure, figure: rotateMatrix(state.figure) };
+        if (!checkCollision(state.grid, { ...state.figure, figure })) {
+          return { ...state, figure: { ...state.figure, figure } };
+        }
+        return state;
+      case 'ArrowRight':
+        if (!checkCollision(state.grid, state.figure, state.grid)) {
+          return {
+            ...state,
+            figure: {
+              ...state.figure,
+              coords: { ...state.coords, x: state.coords.x + 1 },
+            },
+          };
+        }
+        return state;
+      case 'ArrowLeft':
+        if (!checkCollision(state.grid, state.figure, state.grid)) {
+          return {
+            ...state,
+            figure: {
+              ...state.figure,
+              coords: { ...state.coords, x: state.coords.x - 1 },
+            },
+          };
+        }
+        return state;
+      default:
+        return state;
+    }
+  };
+
+  state.emit(state => reducer(state, code));
+};
+
 const initGame = () => {
-  const state = new State();
+  const stateGame = new State();
+  const htmlToDom = renderDom();
+  const handleKeyDown = createHandleKeyDown(stateGame);
+  const tick$ = createTick();
 
-  state.subscribe(EVENTS_ENUM.tick, grid => {
-    dom.innerHTML = renderGrid(grid);
-  });
+  const tickEvent = () => {
+    stateGame.emit(state => {
+      return checkPosition(state, {
+        x: state.figure.coords.x,
+        y: state.figure.coords.y + state.speed,
+      });
+    });
 
-  initKeyListeners(e => KEYMAP[e.code])(e =>
-    state.emit(EVENTS_ENUM.keyPressEvent, KEYMAP[e.code]),
-  );
+    htmlToDom(renderGrid(stateGame.renderGrid()));
+  };
+
+  tick$.subscribe(tickEvent);
+  initKeyDownListeners(e => KEYMAP[e.code])(handleKeyDown);
+  pause(tick$, tickEvent);
 };
 
 initGame();
