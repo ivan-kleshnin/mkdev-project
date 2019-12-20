@@ -1,13 +1,14 @@
-export const rotateMatrix = figure => {
-  let rotatedFigure = [];
-  let len = figure.length - 1;
-  figure.forEach((row, y) => {
+export const rotateMatrix = matrix => {
+  let rotatedMatrix = [];
+  let len = matrix[0].length - 1;
+  matrix.forEach((row, y) => {
     row.forEach((cell, x) => {
-      if (!rotatedFigure[x]) {
-        rotatedFigure[x] = [];
+      let idx = len - x;
+      if (!rotatedMatrix[idx]) {
+        rotatedMatrix[idx] = [];
       }
-      rotatedFigure[x][len - y] = cell;
+      rotatedMatrix[idx][y] = cell;
     });
   });
-  return rotatedFigure;
+  return rotatedMatrix;
 };

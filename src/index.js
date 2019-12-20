@@ -1,24 +1,15 @@
-import { State } from './State';
+import { Grid, Figure } from './State';
 import { SYMBOLS, KEYMAP } from './constants';
 import { rotateMatrix } from './rotateMatrix';
 import { isGameLost } from './isGameLost';
 import { createTick } from './streams';
-import { checkPosition, checkCollision } from './utils';
+import {
+  merge,
+  isCollisionWithFigure,
+  isCollisionWithBottom,
+  isValidMove,
+} from './utils';
 import { renderDom, renderGrid } from './render';
-
-const pause = (tick$, tickEvent) => {
-  let play = true;
-  document.addEventListener('keydown', e => {
-    if (e.code !== 'Space') return;
-    if (play) {
-      tick$.unsubscribe(tickEvent);
-      play = false;
-    } else {
-      tick$.subscribe(tickEvent);
-      play = true;
-    }
-  });
-};
 
 const initKeyDownListeners = condition => cb => {
   document.addEventListener('keydown', e => {
@@ -28,72 +19,59 @@ const initKeyDownListeners = condition => cb => {
   });
 };
 
-const enqueue = (state, move) => {
-
-  return !checkCollision(state.grid,state.figure, state.grid) ?
-};
-
-const createHandleKeyDown = state => e => {
-  const code = e.code;
-
-  const reducer = (state, code) => {
-    switch (code) {
-      case 'ArrowUp':
-        const figure = { ...state.figure, figure: rotateMatrix(state.figure) };
-        if (!checkCollision(state.grid, { ...state.figure, figure })) {
-          return { ...state, figure: { ...state.figure, figure } };
-        }
-        return state;
-      case 'ArrowRight':
-        if (!checkCollision(state.grid, state.figure, state.grid)) {
-          return {
-            ...state,
-            figure: {
-              ...state.figure,
-              coords: { ...state.coords, x: state.coords.x + 1 },
-            },
-          };
-        }
-        return state;
-      case 'ArrowLeft':
-        if (!checkCollision(state.grid, state.figure, state.grid)) {
-          return {
-            ...state,
-            figure: {
-              ...state.figure,
-              coords: { ...state.coords, x: state.coords.x - 1 },
-            },
-          };
-        }
-        return state;
-      default:
-        return state;
-    }
-  };
-
-  state.emit(state => reducer(state, code));
-};
+const moveDown = state => ({ ...state, y: state.y + 1 });
+const moveRight = state => ({ ...state, x: state.x + 1 });
+const moveLeft = state => ({ ...state, x: state.x - 1 });
+const rotate = state => ({ ...state, figure: rotateMatrix(state.figure) });
 
 const initGame = () => {
-  const stateGame = new State();
+  const stateGrid = new Grid();
+  const stateFigure = new Figure(stateGrid.state.width);
   const htmlToDom = renderDom();
-  const handleKeyDown = createHandleKeyDown(stateGame);
   const tick$ = createTick();
 
-  const tickEvent = () => {
-    stateGame.emit(state => {
-      return checkPosition(state, {
-        x: state.figure.coords.x,
-        y: state.figure.coords.y + state.speed,
-      });
+  const gameTick = () => {
+    const isCollision =
+      isCollisionWithFigure(stateGrid.grid, stateFigure) ||
+      isCollisionWithBottom(stateGrid.grid, stateFigure);
+
+    stateFigure.emit(state => {
+      return isValidMove(stateGrid, moveDown(state)) ? moveDown(state) : state;
     });
 
-    htmlToDom(renderGrid(stateGame.renderGrid()));
+    stateGrid.emit(state => {
+      if (isCollision) {
+        return { ...state, grid: merge(stateGrid, stateFigure) };
+      }
+      return state;
+    });
+
+    if (isCollision) {
+      stateFigure.nextFigure();
+    }
+    htmlToDom(renderGrid(merge(stateGrid, stateFigure)));
   };
 
-  tick$.subscribe(tickEvent);
-  initKeyDownListeners(e => KEYMAP[e.code])(handleKeyDown);
-  pause(tick$, tickEvent);
-};
+  tick$.subscribe(gameTick);
 
+  const handleKeyDown = stateFigure => e => {
+    const handleMap = {
+      ArrowUp: rotate,
+      ArrowRight: moveRight,
+      ArrowLeft: moveLeft,
+      ArrowDown: moveDown,
+    };
+
+    stateFigure.emit(state => {
+      const newStateFigure = handleMap[e.code](state);
+      if (isValidMove(stateGrid.state, newStateFigure)) {
+        return newStateFigure;
+      }
+      return state;
+    });
+  };
+  initKeyDownListeners(e => KEYMAP[e.code])(handleKeyDown(stateFigure));
+};
 initGame();
+
+//

@@ -1,4 +1,4 @@
-const TICK_TIME = 400;
+const TICK_TIME = 200;
 
 export const createTick = () => {
   let callbacks = [];
