@@ -1,4 +1,4 @@
-import { rotateMatrix } from '../rotateMatrix';
+import { rotateMatrix } from '../utils';
 
 it('Rotate Matrix', () => {
   const matrix = [

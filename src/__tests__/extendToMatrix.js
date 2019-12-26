@@ -1,4 +1,4 @@
-import { extendToMatrix } from '../extendToMatrix';
+import { extendToMatrix } from '../utils';
 
 it('Extands to matrix', () => {
   const figure = [
