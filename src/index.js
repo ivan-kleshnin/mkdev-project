@@ -7,7 +7,7 @@ import {
   isCollision,
   getDestroyCountLine,
   destroyLine,
-  rotateMatrix,
+  rotateMatrixCounterClockwise,
   isGameLost,
 } from './utils';
 import { renderDom, renderGrid } from './render';
@@ -15,7 +15,7 @@ import { renderDom, renderGrid } from './render';
 const moveDown = state => ({ ...state, y: state.y + state.speed });
 const moveRight = state => ({ ...state, x: state.x + 1 });
 const moveLeft = state => ({ ...state, x: state.x - 1 });
-const rotate = state => ({ ...state, figure: rotateMatrix(state.figure) });
+const rotate = state => ({ ...state, figure: rotateMatrixCounterClockwise(state.figure) });
 
 const initKeyDownListeners = condition => cb => {
   document.addEventListener('keydown', e => {

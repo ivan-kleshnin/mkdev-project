@@ -1,3 +1,5 @@
+import * as R from "ramda"
+
 export const isValidMove = (gridState, stateFigure) => {
   const { x, y, figure } = stateFigure;
 
@@ -74,8 +76,32 @@ export const rotateMatrix = matrix => {
       rotatedMatrix[idx][y] = cell;
     });
   });
-  return rotatedMatrix;
-};
+  return rotatedMatrix
+}
+
+export const getDimensions = (matrix) => {
+  if (!matrix.length || !matrix[0].length) {
+    throw Error("invalid matrix")
+  }
+  return [matrix.length, matrix[0].length]
+}
+
+export const transposeMatrix = (matrix) => {
+  let [n2, m2] = getDimensions(matrix)
+  return R.range(0, m2).map(i => {
+    return R.range(0, n2).map(j => matrix[j][i])
+  })
+}
+
+export const reflectMatrixHorizontally = (matrix) => {
+  let [m2, n2] = getDimensions(matrix)
+  return R.range(0, m2).map(i => {
+    let i2 = m2 - i - 1
+    return R.range(0, n2).map(j => matrix[i2][j])
+  })
+}
+
+export const rotateMatrixCounterClockwise = R.pipe(transposeMatrix, reflectMatrixHorizontally)
 
 export const mergeMatrices = (matrix1, matrix2) =>
   matrix1.map((row, i) => row.map((cell, j) => cell || matrix2[i][j]));
